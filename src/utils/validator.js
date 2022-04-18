@@ -5,16 +5,14 @@ const isValidValue = function (value) {     //if the value is undefined or null 
     if (typeof (value) === undefined || typeof (value) === null) { return false }    //it checks whether the value is null or undefined.
     if (typeof (value) === "string" && (value).trim().length > 0) { return true }      //it checks whether the string contain only space or not
     if (typeof (value) === "number" && (value).toString().trim().length > 0) { return true }    //it checks whether the number contain only space or not
-    if (typeof (value) === "object" && value.length > 0) { return true }    //it checks whether the Object contain only space or not.
+}
+const isValidNumber = function (value){
+    if (typeof (value) === "number" && (value).toString().trim().length > 0) { return true }    //it checks whether the number contain only space or not
 }
 
 const isValidDetails = function(requestBody) {
     return Object.keys(requestBody).length > 0;       // it checks, is there any key is available or not in request body
 };
-
-// const isValidQuery = function(requestQuery) {
-//     return Object.keys(requestQuery).length > 0;       // it checks, is there any key is available or not in query
-// };
 
 const isValidObjectId = function (objectId){    
     return mongoose.Types.ObjectId.isValid(objectId)    //Creating a validation function for Object Id
@@ -32,12 +30,29 @@ let validatePassword = function (password) {
     return /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,15}$/.test(password)    //Checking if user entered a valid phone or not
 }
 
+const isValidSize = function (input) {
+    return ["S", "XS","M","X", "L","XXL", "XL"].indexOf(input) !== -1;  //enum validation
+};
+
+const validInstallment = function isInteger(value) {
+    if (value < 0) return false
+    if (value % 1 == 0) return true;
+}
 
 
-module.exports.isValidValue = isValidValue;
-module.exports.isValidDetails = isValidDetails;
-// module.exports.isValidQuery = isValidQuery;
-module.exports.isValidObjectId = isValidObjectId;
-module.exports.validateEmail = validateEmail;
-module.exports.validatephone = validatephone;
-module.exports.validatePassword = validatePassword;
+const validQuantity = function isInteger(value) {
+    if (value < 1) return false
+    if (isNaN(Number(value))) return false
+    if (value % 1 == 0) return true
+}
+
+//for order
+const isValidStatus = function(status) {
+    return ['pending', 'completed', 'cancelled'].indexOf(status) !== -1
+}
+
+
+
+
+
+module.exports = { isValidValue, isValidDetails, isValidNumber, isValidObjectId, validateEmail, validatephone, validatePassword, isValidSize, validInstallment, validQuantity,  isValidStatus};
