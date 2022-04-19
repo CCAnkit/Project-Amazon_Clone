@@ -14,42 +14,42 @@ const createOrder = async function(req, res) {
     try{
         const query = req.query
         if(Object.keys(query) != 0) {
-            return res.status(400).send({status: false, msg: "Invalid params present in URL"})
+            return res.status(400).send({status: false, message: "Invalid params present in URL"})
         }
 
         let data = req.body
         if (!validator.isValidDetails(data)){
-            return res.status(400).send({ status: false, msg: "Please enter your details to place an order" })   //validating the parameters of body
+            return res.status(400).send({ status: false, message: "Please enter your details to place an order" })   //validating the parameters of body
         }
         const userIdFromParams = req.params.userId
         const userIdFromToken = req.userId
 
         if (!validator.isValidObjectId(userIdFromParams)) {
-            return res.status(400).send({ status: false, msg: "UserId is invalid" });
+            return res.status(400).send({ status: false, message: "UserId is invalid" });
         }
         
         const { productId, quantity, cancellable, status } = data
 
         const findingUser = await userModel.findById(userIdFromParams)
         if(!findingUser) {
-            return res.status(404).send({ status: false, msg: "User not found" })
+            return res.status(404).send({ status: false, message: "User not found" })
         }
         if (userIdFromToken != userIdFromParams) {
             return res.status(403).send({ status: false, message: "Unauthorized access." });
         }
 
         if(!validator.isValidValue(productId)) {
-            return res.status(400).send({ status: false, msg: "Please provide ProductId" })
+            return res.status(400).send({ status: false, message: "Please provide ProductId" })
         }
         if(!validator.isValidObjectId(productId)) {
-            return res.status(400).send({ status: false, msg: "ProductId is invalid" })
+            return res.status(400).send({ status: false, message: "ProductId is invalid" })
         }
         const findProduct = await productModel.findById(productId)
         if(!findProduct) {
-            return res.status(404).send({ status: false, msg: "Product not found" })
+            return res.status(404).send({ status: false, message: "Product not found" })
         }
         if(findProduct.isDeleted == true) {
-            return res.status(400).send({ status: false, msg: "Product is deleted." })
+            return res.status(400).send({ status: false, message: "Product is deleted." })
         }
         if (!validator.isValidValue(quantity)) {
             return res.status(400).send({ status: false, messege: "please provide quantity" })
@@ -70,11 +70,16 @@ const createOrder = async function(req, res) {
             return res.status(400).send({status:false, message:"User cart is empty."})
         }
 
+        const findProductInCart = await cartModel.findOne({ items: { $elemMatch: { productId: productId } } });
+
+        if (!findProductInCart) {
+            return res.status(404).send({ status: false, message: 'product not found in the cart.' });
+        }
+
         if(cancellable){
             if((cancellable != true) && (cancellable != false)){
                 return res.status(400).send({status:false, message:"cancellable should be a valid boolean value."})
             }
-
         }
 
         if(!validator.isValidStatus(status)){
@@ -97,7 +102,7 @@ const createOrder = async function(req, res) {
                 status : status
             }
             const saveOrder= await orderModel.create(newOrder)
-            return res.status(201).send({status:true, message:"Order saved successfully", data:saveOrder})
+            return res.status(201).send({status:true, message:"Order saved successfully", data: saveOrder})
         }
 
         if(isOrderPlaceEarlier){
@@ -141,7 +146,7 @@ const createOrder = async function(req, res) {
     }
     catch(err) {
         console.log(err)
-        res.status(500).send({msg: err.message})
+        res.status(500).send({message: err.message})
     }
 }
 
@@ -150,12 +155,12 @@ const updateOrder = async function(req, res) {
     try{
         const query = req.query
         if(Object.keys(query) != 0) {
-            return res.status(400).send({status: false, msg: "Invalid params present in URL"})
+            return res.status(400).send({status: false, message: "Invalid params present in URL"})
         }
 
         let data = req.body
         if (!validator.isValidDetails(data)){
-            return res.status(400).send({ status: false, msg: "Please enter your details to update." })   //validating the parameters of body
+            return res.status(400).send({ status: false, message: "Please enter your details to update." })   //validating the parameters of body
         }
 
         const userIdFromParams = req.params.userId
@@ -164,7 +169,7 @@ const updateOrder = async function(req, res) {
         const {orderId, status} = data
 
         if (!validator.isValidObjectId(userIdFromParams)) {
-            return res.status(400).send({ status: false, msg: "UserId is invalid" });
+            return res.status(400).send({ status: false, message: "UserId is invalid" });
         }
 
         const userByuserId = await userModel.findById(userIdFromParams);
@@ -182,7 +187,7 @@ const updateOrder = async function(req, res) {
         }
 
         if (!validator.isValidObjectId(orderId)) {
-            return res.status(400).send({ status: false, msg: "ProductId is invalid" });
+            return res.status(400).send({ status: false, message: "ProductId is invalid" });
         }
 
         const findOrder = await orderModel.findById(orderId);
@@ -225,7 +230,7 @@ const updateOrder = async function(req, res) {
     }
     catch(err) {
         console.log(err)
-        res.status(500).send({msg: err.message})
+        res.status(500).send({message: err.message})
     }
 }
 

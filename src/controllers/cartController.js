@@ -9,28 +9,28 @@ const addToCart = async function(req, res) {
     try{
         const query = req.query
         if(Object.keys(query) != 0) {
-            return res.status(400).send({status: false, msg: "Invalid params present in URL"})
+            return res.status(400).send({status: false, message: "Invalid params present in URL"})
         }
 
         let data = req.body
         if (!validator.isValidDetails(data)){
-            return res.status(400).send({ status: false, msg: "Please provide valid details" })   //validating the parameters of body
+            return res.status(400).send({ status: false, message: "Please provide valid details" })   //validating the parameters of body
         }
 
         const userIdFromParams = req.params.userId;
         const userIdFromToken = req.userId;
 
         if (!validator.isValidObjectId(userIdFromParams)) {
-          return res.status(400).send({ status: false, message: 'Please enter valid details' });
+          return res.status(400).send({ status: false, message: 'Please enter valid UserId' });
         }
 
         const findUser = await userModel.findById(userIdFromParams);
         if (!findUser) {
             return res.status(404).send({ status: false, message: 'User not found.' });
         }
-        // if (userIdFromToken !== userIdFromParams) {
-        //   return res.status(400).send({ status: false, message: 'Unauthorized Access' });
-        // }
+        if (userIdFromToken !== userIdFromParams) {
+          return res.status(400).send({ status: false, message: 'Unauthorized Access' });
+        }
         
         const { quantity, productId } = data
 
@@ -42,7 +42,7 @@ const addToCart = async function(req, res) {
             return res.status(404).send({ status: false, message: 'Product not found.' });
         }
         if(findProduct.isDeleted == true){
-            return res.status(400).send({ status:false, msg: "Product is deleted" });
+            return res.status(400).send({ status:false, message: "Product is deleted" });
         }
 
         if (!validator.isValidValue(quantity) || !validator.validQuantity(quantity)) {
@@ -50,8 +50,7 @@ const addToCart = async function(req, res) {
         }
         
         if (findUser._id.toString() != userIdFromToken) {
-            res.status(401).send({ status: false, message: `Unauthorized access! User's info doesn't match` });     //Authentication & authorization
-            return
+            return res.status(401).send({ status: false, message: `Unauthorized access! User's info doesn't match` });   //Authentication & authorization
         }
 
         const findCartOfUser = await cartModel.findOne({ userId: userIdFromParams }) //finding cart related to user.
@@ -91,21 +90,22 @@ const addToCart = async function(req, res) {
     }
     catch(err) {
         console.log(err)
-        res.status(500).send({msg: err.message})
+        res.status(500).send({message: err.message})
     }
 }
+
 
 // -----------updateCart-----------------------------------------------------------------------------------
 const updateCart = async function(req, res) {
     try{
         const query = req.query
         if(Object.keys(query) != 0) {
-            return res.status(400).send({status: false, msg: "Invalid params present in URL"})
+            return res.status(400).send({status: false, message: "Invalid params present in URL"})
         }
 
         let data = req.body
         if (!validator.isValidDetails(data)){
-            return res.status(400).send({ status: false, msg: "Please enter your details to Register" })   //validating the parameters of body
+            return res.status(400).send({ status: false, message: "Please enter your details to Register" })   //validating the parameters of body
         }
 
         const userIdFromParams = req.params.userId        
@@ -114,7 +114,7 @@ const updateCart = async function(req, res) {
         const {productId, cartId, removeProduct} = data
 
         if (!validator.isValidObjectId(userIdFromParams)) {
-            return res.status(400).send({ status: false, msg: "UserId is invalid" });
+            return res.status(400).send({ status: false, message: "UserId is invalid" });
         }
         const userByuserId = await userModel.findById(userIdFromParams);
         if (!userByuserId) {
@@ -127,21 +127,21 @@ const updateCart = async function(req, res) {
             return res.status(400).send({ status: false, messege: "Please provide productId" })
         }
         if (!validator.isValidObjectId(productId)) {
-            return res.status(400).send({ status: false, msg: "ProductId is invalid" });
+            return res.status(400).send({ status: false, message: "ProductId is invalid" });
         }
         const findProduct = await productModel.findById(productId);
         if (!findProduct) {
             return res.status(404).send({ status: false, message: 'Product not found.' });
         }
         if(findProduct.isDeleted == true){
-            return res.status(400).send({ status:false, msg: "Product is deleted" });
+            return res.status(400).send({ status:false, message: "Product is deleted" });
         }
 
         if (!validator.isValidValue(cartId)) {
             return res.status(400).send({ status: false, messege: "Please provide cartId" })
         }
         if (!validator.isValidObjectId(cartId)) {
-            return res.status(400).send({ status: false, msg: "CartId is invalid" });
+            return res.status(400).send({ status: false, message: "CartId is invalid" });
         }
         const findCart = await cartModel.findById(cartId);
         if (!findCart) {
@@ -169,7 +169,7 @@ const updateCart = async function(req, res) {
             let quantity = findCart.totalItems - 1
 
             let newCart = await cartModel.findOneAndUpdate({ _id: cartId }, { $pull: { items: { productId: productId } }, $set: { totalPrice: totalAmount, totalItems: quantity } }, { new: true })     //update the cart with total items and totalprice
-                return res.status(200).send({ status: true, msg: 'Product has been removed from the cart', data: newCart })
+                return res.status(200).send({ status: true, message: 'Product has been removed from the cart', data: newCart })
         }
 
         if(removeProduct == 1){
@@ -183,18 +183,18 @@ const updateCart = async function(req, res) {
                         // console.log("quantity has become 0 now.")
                         var noOfItems = findCart.totalItems - 1
                         let newCart = await cartModel.findOneAndUpdate({ _id: cartId },{ $pull: { items: { productId: productId } },$set: { totalPrice: totalAmount, totalItems: noOfItems } }, { new: true })
-                            return res.status(200).send({ status:true, msg: 'Product has been removed from the cart', data: newCart })
+                            return res.status(200).send({ status:true, message: 'Product has been removed from the cart', data: newCart })
                        }
                 }
             }
         //    console.log("quantity is not 0.")
         let data = await cartModel.findOneAndUpdate({ _id: cartId }, {totalPrice: totalAmount, items: itemsArr}, { new: true })
-            return res.status(200).send({ status:true, msg: 'Product in the cart updated successfully.', data: data })
+            return res.status(200).send({ status:true, message: 'Product in the cart updated successfully.', data: data })
         }
     }
     catch(err) {
         console.log(err)
-        res.status(500).send({msg: err.message})
+        res.status(500).send({message: err.message})
     }
 }
 
@@ -203,18 +203,18 @@ const getCartDetails = async function(req, res) {
     try{
         const query = req.query
         if(Object.keys(query) != 0) {
-            return res.status(400).send({status: false, msg: "Invalid params present in URL"})
+            return res.status(400).send({status: false, message: "Invalid params present in URL"})
         }
         let userIdFromParams = req.params.userId
         let userIdFromToken = req.userId
 
         if (!validator.isValidObjectId(userIdFromParams)) {
-            return res.status(400).send({ status: false, msg: "userId is invalid" });
+            return res.status(400).send({ status: false, message: "UserId is invalid" });
         }
 
         const userByuserId = await userModel.findById(userIdFromParams);
         if (!userByuserId) {
-            return res.status(404).send({ status: false, message: 'user not found.' });
+            return res.status(404).send({ status: false, message: 'User not found.' });
         }
         if (userIdFromToken != userIdFromParams) {
             return res.status(403).send({ status: false, message: "Unauthorized access." });
@@ -224,13 +224,13 @@ const getCartDetails = async function(req, res) {
             return res.status(400).send({ status: false, message: "No cart exist with this id" })
         }
         if(findCart.totalPrice === 0){
-            return res.status(404).send({status:false, msg:"Your cart is empty."})
+            return res.status(404).send({status:false, message:"Your cart is empty."})
         }
-       return res.status(200).send({status:true, msg:"Cart Details.", data: findCart})
+       return res.status(200).send({status:true, message:"Cart Details.", data: findCart})
     }
     catch(err) {
         console.log(err)
-        res.status(500).send({msg: err.message})
+        res.status(500).send({message: err.message})
     }
 }
 
@@ -239,14 +239,14 @@ const deleteCart = async function(req, res) {
     try{
         const query = req.query
         if(Object.keys(query) != 0) {
-            return res.status(400).send({status: false, msg: "Invalid params present in URL"})
+            return res.status(400).send({status: false, message: "Invalid params present in URL"})
         }
 
         let userIdFromParams = req.params.userId
         let userIdFromToken = req.userId
 
         if (!validator.isValidObjectId(userIdFromParams)) {
-            return res.status(400).send({ status: false, msg: "UserId is invalid" });
+            return res.status(400).send({ status: false, message: "UserId is invalid" });
         }
         const userByuserId = await userModel.findById(userIdFromParams);
         if (!userByuserId) {
@@ -260,7 +260,7 @@ const deleteCart = async function(req, res) {
             return res.status(400).send({ status: false, message: "No cart exist with this id" })
         }
         if(findCart.totalPrice === 0){
-            return res.status(404).send({status:false, msg:"Your cart is Empty."})
+            return res.status(404).send({status:false, message:"Your cart is Empty."})
         }
         let deleteCart =  await cartModel.findOneAndUpdate({ userId: userIdFromParams }, {$set: { items: [], totalPrice: 0, totalItems: 0}})
         
@@ -270,7 +270,7 @@ const deleteCart = async function(req, res) {
     }
     catch(err) {
         console.log(err)
-        res.status(500).send({msg: err.message})
+        res.status(500).send({message: err.message})
     }
 }
 

@@ -6,24 +6,27 @@ const userAuth = async (req, res, next) => {
     const token = req.header('Authorization', 'Bearer Token')
 
     if (!token) {     //validating the token is present in headers or not.
-      return res.status(403).send({ status: false, message: 'Missing required token in request' });
+      return res.status(403).send({ status: false, message: 'Token must be present' });
     }
     let validToken = token.split(' ')    //
 
     const decodeToken = jwt.verify(validToken[1], "Project-ShoppingCart", {ignoreExpiration: true})    //If present then verify the secret key
     if (!decodeToken) {
-      return res.status(403).send({ status: false, message: 'Invalid token' });
+      return res.status(403).send({ status: false, message: 'You are not autherised to access.' });
     }
     req.userId = decodeToken.userId     
-        next();
+        next();     //if token is present & for the same user then move to the next
     } 
     catch (err) {
         console.log(err);
-        res.status(500).send({ msg: err.message });
+        res.status(500).send({ message: err.message });
     }
 };
 
 module.exports.userAuth = userAuth;
+
+
+
 
 
 
