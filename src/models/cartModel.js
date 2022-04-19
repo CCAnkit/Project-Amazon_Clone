@@ -1,7 +1,6 @@
-const mongoose = require("mongoose");   //Importing mongoose package
+const mongoose = require("mongoose");   
 const ObjectId = mongoose.Schema.Types.ObjectId;
 
-//Instantiate a mongoose schema
 const cartSchema = new mongoose.Schema({ 
     userId: {
         type: ObjectId,
@@ -34,5 +33,4 @@ const cartSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-//creating a model from schema and export it 
 module.exports = mongoose.model('Cart', cartSchema) 

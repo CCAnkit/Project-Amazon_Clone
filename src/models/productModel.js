@@ -1,7 +1,5 @@
-//Importing mongoose package
 const mongoose = require('mongoose');
 
-//Instantiate a mongoose schema
 const productSchema = new mongoose.Schema({ 
     title: {
         type: String, 
@@ -54,6 +52,5 @@ const productSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-//creating a model from schema and export it 
 module.exports = mongoose.model('Product', productSchema) 
 

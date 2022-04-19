@@ -8,13 +8,13 @@ const validator = require('../utils/validator.js');
 const addToCart = async function(req, res) {
     try{
         const query = req.query
-        if(Object.keys(query) != 0) {
-            return res.status(400).send({status: false, message: "Invalid params present in URL"})
-        }
+        // if(Object.keys(query) != 0) {
+        //     return res.status(400).send({status: false, message: "Invalid params present in URL"})
+        // }
 
         let data = req.body
         if (!validator.isValidDetails(data)){
-            return res.status(400).send({ status: false, message: "Please provide valid details" })   //validating the parameters of body
+            return res.status(400).send({ status: false, message: "Please provide the valid details" })   //validating the parameters of body
         }
 
         const userIdFromParams = req.params.userId;
@@ -45,8 +45,14 @@ const addToCart = async function(req, res) {
             return res.status(400).send({ status:false, message: "Product is deleted" });
         }
 
-        if (!validator.isValidValue(quantity) || !validator.validQuantity(quantity)) {
-            return res.status(400).send({ status: false, message: "Please provide valid quantity & it must be greater than zero." })
+        if (!validator.isValidNumber(quantity)) {
+            return res.status(400).send({ status: false, message: "Please provide the Quantity" })
+        }
+        if ((isNaN(Number(quantity)))) {
+            return res.status(400).send({status:false, message: 'Quantity should be a valid number' })         //price should be valid number
+        }
+        if (quantity < 0) {
+            return res.status(400).send({status:false, message: 'Quantity can not be less than zero' })    //price should be valid number
         }
         
         if (findUser._id.toString() != userIdFromToken) {
@@ -69,21 +75,21 @@ const addToCart = async function(req, res) {
         if (findCartOfUser) {
             //updating price when products get added or removed.
             let price = findCartOfUser.totalPrice + (req.body.quantity * findProduct.price)
-            let itemsArr = findCartOfUser.items
+            let items = findCartOfUser.items
 
             //updating quantity.
-            for(let i=0; i<itemsArr.length; i++){
-                if (itemsArr[i].productId.toString() === productId) {
-                    itemsArr[i].quantity += quantity
-                    let updatedCart = { items: itemsArr, totalPrice: price, totalItems: itemsArr.length }
+            for(let i=0; i<items.length; i++){
+                if (items[i].productId.toString() === productId) {
+                    items[i].quantity += quantity
+                    let updatedCart = { items: items, totalPrice: price, totalItems: items.length }
                     let responseData = await cartModel.findOneAndUpdate({ _id: findCartOfUser._id }, updatedCart, { new: true })
                     return res.status(200).send({ status: true, message: `Product added successfully`, data: responseData })
                 }
             }
 
-            itemsArr.push({ productId: productId, quantity: quantity })   //storing the updated prices and quantity to the newly created array.
+            items.push({ productId: productId, quantity: quantity })   //storing the updated prices and quantity to the newly created array.
 
-            let updatedCart = { items: itemsArr, totalPrice: price, totalItems: itemsArr.length }
+            let updatedCart = { items: items, totalPrice: price, totalItems: items.length }
             let responseData = await cartModel.findOneAndUpdate({ _id: findCartOfUser._id }, updatedCart, { new: true, upsert:true })
             return res.status(200).send({ status: true, message: `Product added to the cart successfully`, data: responseData })
         }
@@ -105,7 +111,7 @@ const updateCart = async function(req, res) {
 
         let data = req.body
         if (!validator.isValidDetails(data)){
-            return res.status(400).send({ status: false, message: "Please enter your details to Register" })   //validating the parameters of body
+            return res.status(400).send({ status: false, message: "Please enter your details to Update" })   //validating the parameters of body
         }
 
         const userIdFromParams = req.params.userId        
@@ -152,7 +158,7 @@ const updateCart = async function(req, res) {
         if (!findProductInCart) {
             return res.status(404).send({ status: false, message: 'No Product found in the cart.' });
         }
-        if (!validator.isValidValue(removeProduct)) {
+        if (!validator.isValidNumber(removeProduct)) {
             return res.status(400).send({ status: false, messege: "Please provide items to remove." })
         }
         if ((isNaN(Number(removeProduct)))) {           

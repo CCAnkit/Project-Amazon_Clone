@@ -8,6 +8,7 @@ const userAuth = async (req, res, next) => {
     if (!token) {     //validating the token is present in headers or not.
       return res.status(403).send({ status: false, message: 'Token must be present' });
     }
+    
     let validToken = token.split(' ')    //
 
     const decodeToken = jwt.verify(validToken[1], "Project-ShoppingCart", {ignoreExpiration: true})    //If present then verify the secret key

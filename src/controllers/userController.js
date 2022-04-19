@@ -52,9 +52,9 @@ const createUser = async (req, res) => {
         if(!validator.validatePassword(password)){
             return res.status(400).send({status:false, message:"Please provide the valid Password"})    //Regex for checking the valid password format 
         }
-        // Hashing the passwords
+
         const salt = bcrypt.genSaltSync(10);
-        const encryptedPassword = bcrypt.hashSync(password, salt);
+        const encryptedPassword = bcrypt.hashSync(password, salt);     // Hashing the passwords
 
         const address = JSON.parse(data.address)    //converting the address into JSON form
 

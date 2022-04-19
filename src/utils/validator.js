@@ -55,16 +55,10 @@ const validInstallment = function isInteger(value) {
     if (value % 1 == 0) return true;
 };
 
-const validQuantity = function isInteger(value) {
-    if (value < 1) return false
-    if (isNaN(Number(value))) return false
-    if (value % 1 == 0) return true
-};
-
 const isValidStatus = function(status) {
     return ['pending', 'completed', 'cancelled'].indexOf(status) !== -1
 };
 
 
 module.exports = { isValidValue, isValidDetails, isValidNumber, isValidObjectId, validateEmail, validatephone, validatePassword, 
-        validateChar, validateStringNoSpace, isValidPincode, validatePrice, isValidSize, validInstallment, validQuantity,  isValidStatus};
+        validateChar, validateStringNoSpace, isValidPincode, validatePrice, isValidSize, validInstallment,  isValidStatus};
