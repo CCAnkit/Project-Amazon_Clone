@@ -44,10 +44,10 @@ const createProduct = async function(req, res) {
         if (currencyId != "INR") {
             return res.status(400).send({status: false, message: "currencyId should be INR"})   //INR currency accepted in CurrencyId
         }
-        if (!validator.isValidValue(currencyFormat)) {
-            currencyFormat = currencySymbol('INR')
-        }
-        // currencyFormat = currencySymbol('INR')  //using CurrencySymbolMap package here
+        // if (!validator.isValidValue(currencyFormat)) {
+        //     currencyFormat = currencySymbol('INR')
+        // }
+        currencyFormat = currencySymbol('INR')  //using CurrencySymbolMap package here
 
         if (!validator.isValidValue(availableSizes)){
             return res.status(400).send({status:false, message:"Please provide the availableSizes"})   //availableSizes is mandory
