@@ -5,18 +5,21 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require("bcrypt");
 
 
-// -----------CreateUser-----------------------------------------------------------------------------------
+// -----------Create User-----------------------------------------------------------------------------------
 const createUser = async (req, res) => {
     try{
         const query = req.query
+
         if(Object.keys(query) != 0) {
             return res.status(400).send({status: false, message: "Invalid params present in URL"})
         }
 
         let data = req.body
+
         if (!validator.isValidDetails(data)){
             return res.status(400).send({ status: false, message: "Please enter your details to Register" })   //validating the parameters of body
         }
+
         const { fname, lname, email, phone, password } = data
 
         if (!validator.isValidValue(fname)){
@@ -54,21 +57,23 @@ const createUser = async (req, res) => {
         }
 
         const salt = bcrypt.genSaltSync(10);
+
         const encryptedPassword = bcrypt.hashSync(password, salt);     // Hashing the passwords
 
         const address = JSON.parse(data.address)    //converting the address into JSON form
         
         if(!address || Object.keys(address).length==0){
-            return res.status(400).send({status: false, message: "Please provide address"})
+            return res.status(400).send({status: false, message: "Please provide the address"})
         }
         if(!address.shipping ||(address.shipping && (!address.shipping.street || !address.shipping.city || !address.shipping.pincode))){
-            return res.status(400).send({status: false, message: "Please provide Shipping address"})
+            return res.status(400).send({status: false, message: "Please provide the Shipping address"})
         } 
         if(!address.billing || (address.billing && (!address.billing.street || !address.billing.city || !address.billing.pincode))){
-            return res.status(400).send({status: false, message: "Please provide Billing address"})
+            return res.status(400).send({status: false, message: "Please provid the Billing address"})
         }
 
         let files = req.files
+
         if (files && files.length > 0) {      
             var profileImage = await awsConfig.uploadFile(files[0])      //upload to s3 and get the uploaded link
         }
@@ -145,7 +150,7 @@ const login = async (req, res) => {
             },
                 "Project-ShoppingCart");  //secret key with the expiry
             // res.setHeader('Authorization, Bearer Token', token);  //setting token in header
-        res.status(200).send({ status: true, message: `User logged in successfully`, data: { userId: userDetails._id, token } }); 
+            res.status(200).send({ status: true, message: `User logged in successfully`, data: { userId: userDetails._id, token } }); 
     }
     catch(err) {
         console.log(err)
@@ -154,7 +159,7 @@ const login = async (req, res) => {
 }
 
 
-// -----------getProfile-----------------------------------------------------------------------------------
+// -----------get Profile Data-----------------------------------------------------------------------------------
 const getProfile = async (req, res) => {
     try{
         const query = req.query
@@ -168,7 +173,7 @@ const getProfile = async (req, res) => {
         const userIdFromToken = req.userId
 
         if (!validator.isValidObjectId(userIdFromParams)){
-            return res.status(400).send({status: false , message: `${userIdFromParams} is not valid type user Id`})      //Checking if user Id is a valid type Object Id or not
+            return res.status(400).send({status: false , message: `${userIdFromParams} is not valid type user Id`})    //Checking if user Id is a valid type Object Id or not
         }
         let user = await userModel.findById(userIdFromParams).lean()       //Validate: The userId is valid or not.
         if (!user) {
@@ -202,6 +207,7 @@ const updateProfile = async (req, res) => {
         if (!validator.isValidObjectId(userIdFromParams)){
             return res.status(400).send({status: false , message: `${userIdFromParams} is not valid type userId`})      //Checking if User Id is a valid type Object Id or not
         }
+
         let User = await userModel.findById(userIdFromParams)       //Validate: The UserId is valid or not.
         
         if (!User) {
@@ -276,7 +282,6 @@ const updateProfile = async (req, res) => {
             }
             const salt = bcrypt.genSaltSync(10);
             const encryptedPassword = bcrypt.hashSync(password, salt);           // Hashing the passwords
-            console.log(encryptedPassword);
         }
         
         if(address){
@@ -332,7 +337,6 @@ const updateProfile = async (req, res) => {
                 }
             }    
         }
-
 
 
         //Updating a User document

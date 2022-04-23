@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema({
         },
         pincode: {
             type: Number, 
-            rqeuired: true
+            required: true
         }
       },
       billing: {
@@ -57,7 +57,7 @@ const userSchema = new mongoose.Schema({
         },
         pincode: {
             type: Number, 
-            rqeuired: true
+            required: true
         }
     }
   }

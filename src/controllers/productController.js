@@ -35,7 +35,7 @@ const createProduct = async function(req, res) {
             return res.status(400).send({status:false, message: "Please provide the currencyId"})    //currencyId is mandory 
         }
         if (currencyId != "INR") {
-            return res.status(400).send({status: false, message: "currencyId should be INR"})   //INR currency accepted in CurrencyId
+            return res.status(400).send({status: false, message: "CurrencyId should be INR"})   //INR currency accepted in CurrencyId
         }
         currencyFormat = currencySymbol('INR')  //using CurrencySymbolMap package here
 
@@ -44,6 +44,7 @@ const createProduct = async function(req, res) {
         }
 
         let sizeEnum = availableSizes.split(",").map(x => x.trim())
+
         for (let i = 0; i < sizeEnum.length; i++) {
             if (!(["S", "XS", "M", "X", "L", "XXL", "XL"].includes(sizeEnum[i]))) {
                 return res.status(400).send({status: false, message: `Available Sizes must be ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
@@ -57,7 +58,7 @@ const createProduct = async function(req, res) {
                 return res.status(400).send({status: false, message: "Installments can not be a decimal number "})    
             }
         }
-        if (isFreeShipping) {
+        if(isFreeShipping) {
             if (!(isFreeShipping != true)) {
                 return res.status(400).send({ status: false, message: "isFreeShipping must be a true or false." })
             }
@@ -149,7 +150,7 @@ const getAllProducts = async function(req, res) {
 
         const products = await productModel.find(filter)
         if (products.length === 0) {
-            return res.status(404).send({ productStatus: false, message: 'No Product found' })
+            return res.status(404).send({ Status: false, message: 'No Product found' })
         }
             return res.status(200).send({status: true, message: 'Product list', data: products })
     }
@@ -170,6 +171,7 @@ const getProductById = async (req, res) => {
         }
 
         const productId = req.params.productId
+
         if (!validator.isValidObjectId(productId)) {
             return res.status(400).send({ status: false, message: `${productId} is not valid type Product Id`});
         }
@@ -214,7 +216,7 @@ const updateProduct = async function(req, res) {
         }
 
         let data = req.body
-        
+
         if (!validator.isValidDetails(data)){
             return res.status(400).send({ status: false, message: "Please enter your details to Update" })   //validating the parameters of body
         }
@@ -227,7 +229,7 @@ const updateProduct = async function(req, res) {
             }
             const isDuplicateTitle = await productModel.findOne({title});
             if (isDuplicateTitle) {
-                return res.status(400).send({status: false,message: "Title already exists.",})
+                return res.status(400).send({status: false,message: "Title is already exists.",})
             }
         }
         
