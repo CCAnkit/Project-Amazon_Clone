@@ -9,7 +9,11 @@ const userAuth = async (req, res, next) => {
       return res.status(403).send({ status: false, message: 'Token must be present' });
     }
 
-    let validToken = token.split(' ')    //
+    let validToken = token.split(' ')
+
+    if(validToken.length !== 2 || validToken[0] !== "Bearer" || !validToken[1] ){
+      return res.status(403).send({ status: false, message: 'Invalid token format.' })
+    }
 
     const decodeToken = jwt.verify(validToken[1], "Project-ShoppingCart", {ignoreExpiration: true})    //If present then verify the secret key
     if (!decodeToken) {
@@ -21,7 +25,7 @@ const userAuth = async (req, res, next) => {
     let tokenExtend = Math.floor(Date.now() / 1000) 
 
     if (expiration < tokenExtend){
-      return res.status(401).send({ status: false, message: "Token expired" })
+      return res.status(401).send({ status: false, message: "Token is expired" })
     }
 
     req.userId = decodeToken.userId     

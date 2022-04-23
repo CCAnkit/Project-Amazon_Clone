@@ -7,12 +7,8 @@ const currencySymbol = require("currency-symbol-map")  //to lookup the currency 
 // -----------createProduct-----------------------------------------------------------------------------------
 const createProduct = async function(req, res) {
     try{
-        const query = req.query
-        if(Object.keys(query) != 0) {
-            return res.status(400).send({status: false, message: "Invalid params present in URL"})  //validating the query parameters
-        }
-
         let data = req.body
+        
         if (!validator.isValidDetails(data)){
             return res.status(400).send({status: false, message: "Please enter your details to Create Product"})   //validating the parameters of body
         }
@@ -32,9 +28,6 @@ const createProduct = async function(req, res) {
         if (!validator.isValidValue(price)){
             return res.status(400).send({status:false, message: "Please provide the price"})   //price is mandory
         }
-        // if (!validator.validatePrice(price)){
-        //     return res.status(400).send({status:false, message: "Please enter the valid price"})   //regex for Price
-        // }
         if (!(!isNaN(Number(price)))) {
             return res.status(400).send({ status: false, message: 'Price should be a valid number' })
         }
@@ -44,9 +37,6 @@ const createProduct = async function(req, res) {
         if (currencyId != "INR") {
             return res.status(400).send({status: false, message: "currencyId should be INR"})   //INR currency accepted in CurrencyId
         }
-        // if (!validator.isValidValue(currencyFormat)) {
-        //     currencyFormat = currencySymbol('INR')
-        // }
         currencyFormat = currencySymbol('INR')  //using CurrencySymbolMap package here
 
         if (!validator.isValidValue(availableSizes)){
@@ -59,9 +49,9 @@ const createProduct = async function(req, res) {
                 return res.status(400).send({status: false, message: `Available Sizes must be ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
             }
         }
-        // if (!validator.isValidSize(availableSizes)){
-        //     return res.status(400).send({status:false, message:"Please provide the size in S, XS, M, X, L, XXL, XL "})   //Enum handeling in availableSizes
-        // }
+        if (!validator.isValidSize(availableSizes)){
+            return res.status(400).send({status:false, message:"Please provide the size in S, XS, M, X, L, XXL, XL "})   //Enum handeling in availableSizes
+        }
         if(installments){
             if (!validator.validInstallment(installments)) {
                 return res.status(400).send({status: false, message: "Installments can not be a decimal number "})    
@@ -72,7 +62,6 @@ const createProduct = async function(req, res) {
                 return res.status(400).send({ status: false, message: "isFreeShipping must be a true or false." })
             }
         }
-        
         
         let files = req.files
         if (files && files.length > 0) {      
@@ -99,13 +88,10 @@ const createProduct = async function(req, res) {
 const getAllProducts = async function(req, res) {
     try{
         const query = req.query
-        // if(Object.keys(query) != 0) {
-        //     return res.status(400).send({status: false, message: "Invalid params present in URL"})
-        // }
 
         const filter = { isDeleted: false } //complete object details.
 
-        const { size, productName, priceGreaterThan, priceLessThan, sortPrice } = query
+        const { size, name, priceGreaterThan, priceLessThan, sortPrice } = query
 
         if(validator.isValidValue(size)){
             if (size) {
@@ -120,10 +106,10 @@ const getAllProducts = async function(req, res) {
         }
 
         //using $regex to match the subString of the names of products & "i" for case insensitive.
-        if(validator.isValidValue(productName)){     
+        if(validator.isValidValue(name)){     
             filter['title'] = {}
-            filter['title']['$regex'] = productName
-            filter['title']['$options'] = 'i'
+            filter['title']['$regex'] = name        //samsung galaxy user: GALAXY
+            filter['title']['$options'] = '$i'      //case insensitive
         }
 
         if(validator.isValidValue(priceGreaterThan)){       //setting price for ranging the product's price to fetch them.
@@ -133,28 +119,28 @@ const getAllProducts = async function(req, res) {
             if (priceGreaterThan < 0) {
                 return res.status(400).send({status:false, message: 'Price can not be less than zero' })
             }
-            if (!filter.hasOwnProperty('price'))
-                filter['price'] = {}
-                filter['price']['$gte'] = Number(priceGreaterThan)
+            if (!Object.prototype.hasOwnProperty.call(filter, 'price'))     // checking if "price" exists
+                filter['price'] = {}                               //creating empty object
+                filter['price']['$gte'] = Number(priceGreaterThan)      //using mongoose operator
         }
 
         if(validator.isValidValue(priceLessThan)){      //setting price for ranging the product's price to fetch them.
             if (!(!isNaN(Number(priceLessThan)))) {
-                return res.status(400).send({status:false, message: 'price should be a valid number' })   
+                return res.status(400).send({status:false, message: 'Price should be a valid number' })   
             }
             if (priceLessThan <= 0) {
-                return res.status(400).send({status:false, message: 'price can not be zero or less than zero' })
+                return res.status(400).send({status:false, message: 'Price can not be zero or less than zero' })
             }
-            if (!filter.hasOwnProperty('price'))
-                filter['price'] = {}
-                filter['price']['$lte'] = Number(priceLessThan)
+            if (!Object.prototype.hasOwnProperty.call(filter, 'price'))     // checking if "price" exists
+                filter['price'] = {}                                 //creating empty object
+                filter['price']['$lte'] = Number(priceLessThan)             //using mongoose operator
         }
 
-        if (validator.isValidValue(sortPrice)) {       //sorting the products acc. to prices => 1 for ascending & -1 for descending.
-            if (!((priceSort == 1) || (priceSort == -1))) {
-                return res.status(400).send({status: false, message: 'priceSort should be 1 or -1 '})
+        if(validator.isValidValue(sortPrice)) {       //sorting the products acc. to prices => 1 for ascending & -1 for descending.
+            if (!((sortPrice == 1) || (sortPrice == -1))) {
+                return res.status(400).send({status: false, message: 'SortPrice should be 1 or -1 '})
             }
-            const products = await productModel.find(filter).sort({ price: priceSort })
+            const products = await productModel.find(filter).sort({ price: sortPrice })
             if (products.length === 0) {
                 return res.status(404).send({ productStatus: false, message: 'No Product found' })
             }
@@ -165,7 +151,6 @@ const getAllProducts = async function(req, res) {
         if (products.length === 0) {
             return res.status(404).send({ productStatus: false, message: 'No Product found' })
         }
-
             return res.status(200).send({status: true, message: 'Product list', data: products })
     }
     catch(err) {
@@ -179,6 +164,7 @@ const getAllProducts = async function(req, res) {
 const getProductById = async (req, res) => {
     try{
         const query = req.query
+
         if(Object.keys(query) != 0) {
             return res.status(400).send({status: false, message: "Invalid params present in URL"})
         }
@@ -188,7 +174,7 @@ const getProductById = async (req, res) => {
             return res.status(400).send({ status: false, message: `${productId} is not valid type Product Id`});
         }
 
-        const findProduct = await productModel.findById(productId)
+        const findProduct = await productModel.findOne({_id: productId, isDeleted: false})
         if (!findProduct) {
             return res.status(404).send({ status: false, message: 'Product does not exists' })  //Validate: The Product Id is valid or not.
         }
@@ -208,11 +194,13 @@ const getProductById = async (req, res) => {
 const updateProduct = async function(req, res) {
     try{
         const query = req.query
+
         if(Object.keys(query) != 0) {
             return res.status(400).send({status: false, message: "Invalid params present in URL"})
         }
 
         const productId = req.params.productId
+
         if (!validator.isValidObjectId(productId)) {
             return res.status(400).send({ status: false, message: "ProductId is invalid" });
         }
@@ -226,13 +214,12 @@ const updateProduct = async function(req, res) {
         }
 
         let data = req.body
+        
         if (!validator.isValidDetails(data)){
             return res.status(400).send({ status: false, message: "Please enter your details to Update" })   //validating the parameters of body
         }
 
-        
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, productImage, availableSizes, installments } = data
-
 
         if(title){
             if (!validator.isValidValue(title)) {
@@ -254,9 +241,6 @@ const updateProduct = async function(req, res) {
             if (!validator.isValidValue(price)) {
                 return res.status(400).send({ status: false, messege: "Price can not be empty." })
             }
-            // if (!validator.validatePrice(price)){
-            //     return res.status(400).send({status:false, message: "Please enter the valid price"})   //regex for Price
-            // }
             if (!(!isNaN(Number(price)))) {
                 return res.status(400).send({ status: false, message: 'Price should be a valid number' })
             }
@@ -334,6 +318,7 @@ const updateProduct = async function(req, res) {
 const deleteProduct = async function(req, res) {
     try{
         const query = req.query
+
         if(Object.keys(query) != 0) {
             return res.status(400).send({status: false, message: "Invalid params present in URL"})
         }

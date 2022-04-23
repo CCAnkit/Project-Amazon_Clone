@@ -34,17 +34,17 @@ let validateChar = function(value){
     return /^[A-Za-z\s]+$/.test(value)
 };
 
-let validateStringNoSpace = function (value) {
-    return /^\S*$/.test(value)
-};
+// let validateStringNoSpace = function (value) {
+//     return /^\S*$/.test(value)
+// };
 
 let isValidPincode = function (value) {
     if (!isNaN(value) && value.toString().length == 6) return true
 };
 
-let validatePrice = function (price) {
-    return /^\d+(?:\.\d{1,2})?$/.test(price)    
-};
+// let validatePrice = function (price) {
+//     return /^\d+(?:\.\d{1,2})?$/.test(price)    
+// };
 
 const isValidSize = function (input) {
     return ["S", "XS","M","X", "L","XXL", "XL"].indexOf(input) !== -1;  //enum validation
@@ -61,4 +61,4 @@ const isValidStatus = function(status) {
 
 
 module.exports = { isValidValue, isValidDetails, isValidNumber, isValidObjectId, validateEmail, validatephone, validatePassword, 
-        validateChar, validateStringNoSpace, isValidPincode, validatePrice, isValidSize, validInstallment,  isValidStatus};
+        validateChar, /*validateStringNoSpace,*/ isValidPincode, /*validatePrice,*/ isValidSize, validInstallment,  isValidStatus};

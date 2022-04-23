@@ -7,33 +7,33 @@ const validator = require('../utils/validator.js');
 // -----------addToCart-----------------------------------------------------------------------------------
 const addToCart = async function(req, res) {
     try{
-        const query = req.query
-        // if(Object.keys(query) != 0) {
-        //     return res.status(400).send({status: false, message: "Invalid params present in URL"})
-        // }
-
-        let data = req.body
-        if (!validator.isValidDetails(data)){
-            return res.status(400).send({ status: false, message: "Please provide the valid details" })   //validating the parameters of body
-        }
-
+        
         const userIdFromParams = req.params.userId;
+        
         const userIdFromToken = req.userId;
-
+        
         if (!validator.isValidObjectId(userIdFromParams)) {
-          return res.status(400).send({ status: false, message: 'Please enter valid UserId' });
+            return res.status(400).send({ status: false, message: 'Please enter valid UserId' });
         }
-
         const findUser = await userModel.findById(userIdFromParams);
         if (!findUser) {
             return res.status(404).send({ status: false, message: 'User not found.' });
         }
         if (userIdFromToken !== userIdFromParams) {
-          return res.status(400).send({ status: false, message: 'Unauthorized Access' });
+            return res.status(400).send({ status: false, message: 'Unauthorized Access' });
+        }
+        if (findUser._id.toString() != userIdFromToken) {
+            return res.status(401).send({ status: false, message: `Unauthorized access! User's info doesn't match` });   //Authentication & authorization
+        }
+        
+        let data = req.body
+        
+        if (!validator.isValidDetails(data)){
+            return res.status(400).send({ status: false, message: "Please provide the valid details" })   //validating the parameters of body
         }
         
         const { quantity, productId } = data
-
+        
         if (!validator.isValidObjectId(productId) || !validator.isValidValue(productId)) {
             return res.status(400).send({ status: false, message: "Please provide valid Product Id" })
         }
@@ -54,12 +54,8 @@ const addToCart = async function(req, res) {
         if (quantity < 0) {
             return res.status(400).send({status:false, message: 'Quantity can not be less than zero' })    //price should be valid number
         }
-        
-        if (findUser._id.toString() != userIdFromToken) {
-            return res.status(401).send({ status: false, message: `Unauthorized access! User's info doesn't match` });   //Authentication & authorization
-        }
 
-        const findCartOfUser = await cartModel.findOne({ userId: userIdFromParams }) //finding cart related to user.
+    const findCartOfUser = await cartModel.findOne({ userId: userIdFromParams }) //finding cart related to user.
 
         if (!findCartOfUser) {      //destructuring for the response body.
             var cartData = {
@@ -272,7 +268,7 @@ const deleteCart = async function(req, res) {
         
         const findCartAfterDeletion = await cartModel.findOne({ userId: userIdFromParams })
         
-        return res.status(200).send({status: true, message: "All products have been removed from the cart successfully", data: findCartAfterDeletion})
+        return res.status(204).send({status: true, message: "All products have been removed from the cart successfully", data: findCartAfterDeletion})
     }
     catch(err) {
         console.log(err)
