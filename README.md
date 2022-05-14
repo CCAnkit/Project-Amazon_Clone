@@ -1,5 +1,5 @@
-# Project-Shopping-Cart
-
+# Project- Amazon Clone
+# Shopping-Cart
 #Thorium
 
 ## Project - Products Management
